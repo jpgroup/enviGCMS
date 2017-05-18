@@ -265,3 +265,42 @@ plotintslope <- function(list,name=NULL){
         lines(c(rtpeak,rtpeak), c(-.5*max(slopedata), .5*max(slopedata)), "l", col="blue")
 }
 
+#' plot the comparision of two xcmsset according to certain method
+#' @param data1 the first xcmsset data set
+#' @param data2 the second xcmsset data set
+#' @param method could be 'max', 'mean', 'median'
+#' @param p filtered peaks larger than the propotion of the max, mean or median
+#' @param mzrange the mass range to plot the data
+#' @param ... parameters for `plot` function
+#' @return NULL
+#' @export
+plotc <- function(data1, data2, method = 'max', p = 0.5, mzrange = c(100,1000),...){
+        data1 <- data.frame(peaks(data1))
+        data2 <- data.frame(peaks(data2))
+        if(method == 'max'){
+                plot(data1$mz[data1$into > max(data1$into)*p]~data1$rt[data1$into > max(data1$into)*p], xlab = 'Retention Time', ylab = 'm/z',ylim = mzrange,...)
+                points(data2$mz[data2$into > max(data2$into)*p]~data2$rt[data2$into > max(data2$into)*p], col = 'red')
+        }else if( method == 'mean') {
+                plot(data1$mz[data1$into > mean(data1$into)*p]~data1$rt[data1$into > mean(data1$into)*p], xlab = 'Retention Time', ylab = 'm/z',ylim = mzrange,...)
+                points(data2$mz[data2$into > mean(data2$into)*p]~data2$rt[data2$into > mean(data2$into)*p], col = 'red')
+        }else if ( method == 'median') {
+                plot(data1$mz[data1$into > median(data1$into)*p]~data1$rt[data1$into > median(data1$into)*p], xlab = 'Retention Time', ylab = 'm/z',ylim = mzrange,...)
+                points(data2$mz[data2$into > median(data2$into)*p]~data2$rt[data2$into > median(data2$into)*p], col = 'red')
+        }else {
+                plot(data1$mz~data1$rt, xlab = 'Retention Time', ylab = 'm/z',ylim = mzrange,...)
+                points(data2$mz~data2$rt, col = 'red')
+        }
+}
+#' plot EIC and boxplot for all peaks and return diffreport
+#' @param xset xcmsset object
+#' @param name filebase of the sub dir
+#' @param test 't' means two-sample welch t-test, 't.equalvar' means two-sample welch t-test with equal variance, 'wilcoxon' means rank sum wilcoxon test, 'f' means F-test, 'pairt' means paired t test, 'blockf' means Two-way analysis of variance, default 't'
+#' @param nonpara 'y' means using nonparametric ranked data, 'n' means original data
+#' @param ... other parameters for `diffreport`
+#' @return diffreport and pdf figure for EIC and boxplot
+#' @export
+plote <- function(xset, name = 'test', test = 't', nonpara = 'n',...){
+        gt <- xcms::groups(xset)
+        a <- xcms::diffreport(xset,filebase = name,eicmax = nrow(gt),nonpara = nonpara,...)
+        return(a)
+}
